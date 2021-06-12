@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CSTea</title>
+  </head>
+  <style>
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+}
+  </style>
+  <body>
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <script src="./bootstrap.js"></script>
+    <div class="grid-container">
+      <div id="source-code"></div>
+      <div>
+        <pre id="cst">
+        </pre>
+      </div>
+    </div>
+    <!-- button id="gen-cst">Generate CST</button -->
+  </body>
+</html>
