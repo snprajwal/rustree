@@ -10,15 +10,24 @@
   grid-template-columns: 1fr 1fr;
   grid-gap: 20px;
 }
+.syntax-node {
+  padding: 0px;
+  padding-left: 20px;
+}
+.syntax-err {
+  color: red;
+}
+pre {
+  padding: 0px;
+  margin: 0px
+}
   </style>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
     <script src="./bootstrap.js"></script>
     <div class="grid-container">
       <div id="source-code"></div>
-      <div>
-        <pre id="cst">
-        </pre>
+      <div id="cst">
       </div>
     </div>
     <!-- button id="gen-cst">Generate CST</button -->

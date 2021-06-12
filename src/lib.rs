@@ -53,7 +53,16 @@ impl SynNode {
     }
 
     pub fn to_string(&self) -> String {
-        format!("{:?}@{:?}", self.node.kind(), self.node.text_range(),)
+        format!("{:?} {:?}", self.node.kind(), self.node.text_range(),)
+    }
+
+    pub fn range(&self) -> TextRange {
+        let r = self.node.text_range();
+        (r.start().into(), r.end().into()).into()
+    }
+
+    pub fn text(&self) -> String {
+        format!("{:?}", self.node.kind())
     }
 
     pub fn from_str(s: &str) -> Result<JsValue, JsValue> {
@@ -95,7 +104,18 @@ impl SynErr {
 }
 
 #[wasm_bindgen]
-struct TextRange {
+impl SynErr {
+    pub fn range(&self) -> TextRange {
+        let r = self.err.range();
+        (r.start().into(), r.end().into()).into()
+    }
+    pub fn to_string(&self) -> String {
+        self.err.to_string()
+    }
+}
+
+#[wasm_bindgen]
+pub struct TextRange {
     start: u32,
     end: u32,
 }
@@ -107,12 +127,14 @@ impl From<(u32, u32)> for TextRange {
 }
 
 #[wasm_bindgen]
-impl SynErr {
-    pub fn range(&self) -> TextRange {
-        let r = self.err.range();
-        (r.start().into(), r.end().into()).into()
+impl TextRange {
+    pub fn start(&self) -> u32 {
+        self.start
+    }
+    pub fn end(&self) -> u32 {
+        self.end
     }
     pub fn to_string(&self) -> String {
-        self.err.to_string()
+        format!("{}..{}", self.start, self.end)
     }
 }
