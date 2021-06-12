@@ -6,16 +6,24 @@
   </head>
   <style>
 .grid-container {
+  width: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-gap: 20px;
 }
 .syntax-node {
-  padding: 0px;
-  padding-left: 20px;
+  padding-left: 5px;
+  margin-left: 20px;
+  border-left: 2px solid white;
+}
+.syntax-node:hover {
+  border-left: 2px solid #ccc;
 }
 .syntax-err {
   color: red;
+}
+#cst, #source-code {
+  height: 100vh;
+  overflow: scroll;
 }
 pre {
   padding: 0px;

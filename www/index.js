@@ -32,6 +32,7 @@ const highlightField = StateField.define({
         add: [hlMark.range(e.value.from, e.value.to)]
       });
     }
+    return Decoration.none;
   },
   provide: f => EditorView.decorations.from(f)
 })
@@ -39,7 +40,9 @@ const highlightField = StateField.define({
 const hlMark = Decoration.mark({class: "cm-highlight"})
 
 const hlTheme = EditorView.baseTheme({
-  ".cm-highlight": { textDecoration: "underline 3px red" }
+  ".cm-highlight": {
+    backgroundColor: "#ff3299aa"
+  }
 })
 
 function highlightArea(view, textRange) {
@@ -54,9 +57,8 @@ function render_cst(synRoot) {
   let nodeDiv = document.createElement("div");
   nodeDiv.className = "syntax-node";
   let r = synRoot.range();
-  let synText = wrap(synRoot.text() + synRoot.range().to_string(), "pre");
+  let synText = wrap(synRoot.kind() + " @ " + r.to_string() + " " +synRoot.text(), "pre");
   synText.onmouseover = () => {
-    console.log(r.to_string());
     highlightArea(view, r);
   }
   nodeDiv.appendChild(synText);
@@ -79,7 +81,7 @@ function render_err(errorList) {
   errDiv.className = "syntax-err";
   errorList.forEach(err => {
     errDiv.appendChild(wrap(err.to_string(), "pre"));
-    highlightArea(view, err.range());
+    // highlightArea(view, err.range());
   });
   return errDiv;
 }
