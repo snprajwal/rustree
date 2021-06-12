@@ -61,8 +61,15 @@ impl SynNode {
         (r.start().into(), r.end().into()).into()
     }
 
-    pub fn text(&self) -> String {
+    pub fn kind(&self) -> String {
         format!("{:?}", self.node.kind())
+    }
+
+    pub fn text(&self) -> String {
+        match &self.node {
+            NodeOrToken::Node(_) => "".into(),
+            NodeOrToken::Token(t) => format!("{:?}", t.text()),
+        }
     }
 
     pub fn from_str(s: &str) -> Result<JsValue, JsValue> {
