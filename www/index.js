@@ -4,10 +4,12 @@ import {Decoration, DecorationSet} from "@codemirror/view"
 import {StateField, StateEffect} from "@codemirror/state"
 import {rust} from "@codemirror/lang-rust"
 import {oneDark, oneDarkTheme, oneDarkHighlightStyle} from "@codemirror/theme-one-dark"
+import file from '!raw-loader!../src/lib.rs'
 
 let cst = document.getElementById('cst');
 let view = new EditorView({
   state: EditorState.create({
+    doc: file,
     extensions: [
       basicSetup,
       rust(),
@@ -105,3 +107,5 @@ function doRender() {
     cst.appendChild(render_err(synError));
   }
 }
+
+doRender();

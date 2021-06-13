@@ -1,7 +1,7 @@
 {
-  "name": "create-wasm-app",
+  "name": "cstea",
   "version": "0.1.0",
-  "description": "create an app to consume rust-generated wasm packages",
+  "description": "explore rust csts",
   "main": "index.js",
   "bin": {
     "create-wasm-app": ".bin/create-wasm-app.js"
@@ -35,6 +35,7 @@
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
     "hello-wasm-pack": "^0.1.0",
+    "raw-loader": "^4.0.2",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.5"
