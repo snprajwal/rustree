@@ -29,6 +29,7 @@
   "dependencies": {
     "@codemirror/basic-setup": "^0.18.2",
     "@codemirror/lang-rust": "^0.18.0",
+    "@codemirror/theme-one-dark": "^0.18.1",
     "cstea": "file:../pkg"
   },
   "devDependencies": {

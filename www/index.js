@@ -3,6 +3,7 @@ import {EditorState, EditorView, basicSetup} from "@codemirror/basic-setup"
 import {Decoration, DecorationSet} from "@codemirror/view"
 import {StateField, StateEffect} from "@codemirror/state"
 import {rust} from "@codemirror/lang-rust"
+import {oneDark, oneDarkTheme, oneDarkHighlightStyle} from "@codemirror/theme-one-dark"
 
 let cst = document.getElementById('cst');
 let view = new EditorView({
@@ -14,10 +15,13 @@ let view = new EditorView({
         if (v.docChanged) {
           doRender()
         }
-      })
+      }),
+      oneDark,
+      oneDarkTheme,
+      oneDarkHighlightStyle.extension
     ]
   }),
-  parent: document.getElementById('source-code')
+  parent: document.getElementById('source-code'),
 })
 
 const doHighlight = StateEffect.define()
@@ -60,6 +64,8 @@ function render_cst(synRoot) {
   let synText = wrap(synRoot.kind() + " @ " + r.to_string() + " " +synRoot.text(), "pre");
   synText.onmouseover = () => {
     highlightArea(view, r);
+    let sourceFile = view.state.doc.toString();
+    view.scrollPosIntoView(r.start());
   }
   nodeDiv.appendChild(synText);
   if (!synRoot.is_token()) {
@@ -80,14 +86,17 @@ function render_err(errorList) {
   let errDiv = document.createElement("div");
   errDiv.className = "syntax-err";
   errorList.forEach(err => {
-    errDiv.appendChild(wrap(err.to_string(), "pre"));
+    let sourceFile = view.state.doc.toString();
+    let line = err.range().line(sourceFile);
+    let col = err.range().col(sourceFile);
+    errDiv.appendChild(wrap(`line ${line}, col ${col}: ` + err.to_string(), "pre"));
     // highlightArea(view, err.range());
   });
   return errDiv;
 }
 
 function doRender() {
-  let sourceFile = view.state.doc.toString();;
+  let sourceFile = view.state.doc.toString();
   cst.innerHTML = "";
   try {
     let synRoot = SynNode.from_str(sourceFile);
