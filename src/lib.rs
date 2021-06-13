@@ -16,12 +16,6 @@ use std::{convert::From, str::FromStr};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[wasm_bindgen]
-pub fn put_cst(source: &str) -> String {
-    let source_file = SourceFile::parse(source);
-    source_file.debug_dump()
-}
-
 // wrapper type to pass syntax elements to JS
 #[wasm_bindgen]
 #[derive(Debug, Clone)]
@@ -133,14 +127,33 @@ impl From<(u32, u32)> for TextRange {
     }
 }
 
+impl TextRange {
+    pub fn to_line_col(&self, source: &str) -> (u32, u32) {
+        let end = self.end() as usize;
+        let line = &source[..end].chars().filter(|&c| c == '\n').count() + 1;
+        let col = &source[..end].rfind('\n').map(|c| end - c).unwrap_or(end);
+        (line as u32, *col as u32)
+    }
+}
+
 #[wasm_bindgen]
 impl TextRange {
     pub fn start(&self) -> u32 {
         self.start
     }
+
     pub fn end(&self) -> u32 {
         self.end
     }
+
+    pub fn line(&self, source: &str) -> u32 {
+        self.to_line_col(source).0
+    }
+
+    pub fn col(&self, source: &str) -> u32 {
+        self.to_line_col(source).1
+    }
+
     pub fn to_string(&self) -> String {
         format!("{}..{}", self.start, self.end)
     }
