@@ -1,4 +1,4 @@
-import {SynNode, put_cst} from "cstea";
+import {SynNode} from "cstea";
 import {EditorState, EditorView, basicSetup} from "@codemirror/basic-setup"
 import {Decoration, DecorationSet} from "@codemirror/view"
 import {StateField, StateEffect} from "@codemirror/state"
@@ -63,7 +63,7 @@ function render_cst(synRoot) {
   let nodeDiv = document.createElement("div");
   nodeDiv.className = "syntax-node";
   let r = synRoot.range();
-  let synText = wrap(synRoot.kind() + " @ " + r.to_string() + " " +synRoot.text(), "pre");
+  let synText = synTextHtml(synRoot);
   synText.onmouseover = () => {
     highlightArea(view, r);
     let sourceFile = view.state.doc.toString();
@@ -76,6 +76,27 @@ function render_cst(synRoot) {
     });
   }
   return nodeDiv;
+}
+
+function synTextHtml(node) {
+  let kind = document.createElement("span");
+  kind.innerText = ` ${node.kind()} `
+  kind.className = "kind";
+
+  let text = document.createElement("span");
+  text.innerText = ` ${node.text()} `
+  text.className = "token-text";
+
+  let range = document.createElement("span");
+  range.innerText = ` ${node.range().to_string()} `
+  range.className = "range";
+
+  let d = document.createElement("div");
+  d.appendChild(kind);
+  d.appendChild(text);
+  d.appendChild(range);
+
+  return d;
 }
 
 function wrap(s, tag) {
