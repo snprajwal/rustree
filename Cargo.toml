@@ -12,7 +12,7 @@ default = ["console_error_panic_hook", "wee_alloc"]
 
 [dependencies]
 wasm-bindgen = "0.2.63"
-syntax = { path = "../ref/ra-orig/crates/syntax" }
+syntax = { git = "https://github.com/nerdypepper/rust-analyzer" }
 console_error_panic_hook = { version = "0.1.6", optional = true }
 wee_alloc = { version = "0.4.5", optional = true }
 js-sys = "0.3.51"
