@@ -1,9 +1,9 @@
-import {SynNode} from "cstea";
-import {EditorState, EditorView, basicSetup} from "@codemirror/basic-setup"
-import {Decoration, DecorationSet} from "@codemirror/view"
-import {StateField, StateEffect} from "@codemirror/state"
+import {SynNode} from "rustree";
+import {EditorView, basicSetup} from "codemirror"
+import {Decoration} from "@codemirror/view"
+import {EditorState, StateField, StateEffect} from "@codemirror/state"
 import {rust} from "@codemirror/lang-rust"
-import {oneDark, oneDarkTheme, oneDarkHighlightStyle} from "@codemirror/theme-one-dark"
+import {oneDark} from "@codemirror/theme-one-dark"
 import file from '!raw-loader!../src/lib.rs'
 
 let cst = document.getElementById('cst');
@@ -15,12 +15,10 @@ let view = new EditorView({
       rust(),
       EditorView.updateListener.of((v) => {
         if (v.docChanged) {
-          doRender()
+          render()
         }
       }),
       oneDark,
-      oneDarkTheme,
-      oneDarkHighlightStyle.extension
     ]
   }),
   parent: document.getElementById('source-code'),
@@ -32,7 +30,7 @@ const highlightField = StateField.define({
   create() {
     return Decoration.none;
   },
-  update(highlight, tr) {
+  update(_, tr) {
     for (let e of tr.effects) if (e.is(doHighlight)) {
       return (Decoration.none).update({
         add: [hlMark.range(e.value.from, e.value.to)]
@@ -59,20 +57,20 @@ function highlightArea(view, textRange) {
   view.dispatch({effects});
 }
 
-function render_cst(synRoot) {
+function renderCst(synRoot) {
   let nodeDiv = document.createElement("div");
   nodeDiv.className = "syntax-node";
-  let r = synRoot.range();
   let synText = synTextHtml(synRoot);
-  synText.onmouseover = () => {
-    highlightArea(view, r);
-    let sourceFile = view.state.doc.toString();
-    view.scrollPosIntoView(r.start());
-  }
+  // FIXME: support highlight on hover
+  // let r = synRoot.range();
+  // synText.onmouseover = () => {
+  //   highlightArea(view, r);
+  //   view.scrollIntoView(r.start());
+  // }
   nodeDiv.appendChild(synText);
   if (!synRoot.is_token()) {
     synRoot.children().forEach(node => {
-      nodeDiv.appendChild(render_cst(node));
+      nodeDiv.appendChild(renderCst(node));
     });
   }
   return nodeDiv;
@@ -105,7 +103,7 @@ function wrap(s, tag) {
   return t;
 }
 
-function render_err(errorList) {
+function renderErr(errorList) {
   let errDiv = document.createElement("div");
   errDiv.className = "syntax-err";
   errorList.forEach(err => {
@@ -113,20 +111,19 @@ function render_err(errorList) {
     let line = err.range().line(sourceFile);
     let col = err.range().col(sourceFile);
     errDiv.appendChild(wrap(`line ${line}, col ${col}: ` + err.to_string(), "pre"));
-    // highlightArea(view, err.range());
   });
   return errDiv;
 }
 
-function doRender() {
+function render() {
   let sourceFile = view.state.doc.toString();
   cst.innerHTML = "";
   try {
     let synRoot = SynNode.from_str(sourceFile);
-    cst.appendChild(render_cst(synRoot));
+    cst.appendChild(renderCst(synRoot));
   } catch (synError) {
-    cst.appendChild(render_err(synError));
+    cst.appendChild(renderErr(synError));
   }
 }
 
-doRender();
+render();

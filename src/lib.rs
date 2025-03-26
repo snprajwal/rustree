@@ -1,10 +1,5 @@
-mod utils;
-
 use js_sys::Array;
-use syntax::{
-    ast::{self, AstNode},
-    NodeOrToken, SourceFile, SyntaxElement, SyntaxError, SyntaxNode,
-};
+use ra_ap_syntax::{Edition, NodeOrToken, SourceFile, SyntaxElement, SyntaxError, ast::AstNode};
 use wasm_bindgen::prelude::*;
 
 use std::{convert::From, str::FromStr};
@@ -73,31 +68,29 @@ impl SynNode {
 impl FromStr for SynNode {
     type Err = Array;
     fn from_str(s: &str) -> Result<Self, Array> {
-        let source_file = SourceFile::parse(s);
-        if source_file.errors().is_empty() {
-            Ok(Self {
-                node: NodeOrToken::Node(source_file.ok().unwrap().syntax().clone()),
-            })
-        } else {
-            Err(source_file
-                .errors()
+        let source_file = SourceFile::parse(s, Edition::Edition2024);
+        match source_file.ok() {
+            Ok(source) => Ok(Self {
+                node: NodeOrToken::Node(source.syntax().clone()),
+            }),
+            Err(errs) => Err(errs
                 .into_iter()
-                .map(SynErr::new)
+                .map(SynErr::from)
                 .map(JsValue::from)
-                .collect())
+                .collect()),
         }
     }
 }
 
 #[wasm_bindgen]
 #[derive(Debug, Clone)]
-struct SynErr {
+pub struct SynErr {
     err: SyntaxError,
 }
 
-impl SynErr {
-    pub fn new(err: &SyntaxError) -> Self {
-        Self { err: err.clone() }
+impl From<SyntaxError> for SynErr {
+    fn from(value: SyntaxError) -> Self {
+        Self { err: value }
     }
 }
 

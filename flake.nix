@@ -1,48 +1,32 @@
 {
   inputs = {
-    utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nmattia/naersk";
-    mozillapkgs = {
-      url = "github:andersk/nixpkgs-mozilla/stdenv.lib";
-      flake = false;
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    naersk = {
+      url = "github:nix-community/naersk";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     gitignore = {
       url = "github:hercules-ci/gitignore";
       flake = false;
     };
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, utils, naersk, mozillapkgs, gitignore, ... }:
-    utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, flake-utils, naersk, gitignore, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages."${system}";
-        lib = pkgs.lib;
-        stdenv = pkgs.stdenv;
-        darwin = pkgs.darwin;
+        pkgs = nixpkgs.legacyPackages.${system};
         inherit (import gitignore { inherit (pkgs) lib; }) gitignoreSource;
 
-        # Get a specific rust version
-        mozilla = pkgs.callPackage (mozillapkgs + "/package-set.nix") { };
-        chanspec = {
-          date = "2021-03-31";
-          channel = "nightly";
-          sha256 = "oK5ebje09MRn988saJMT3Zze/tRE7u9zTeFPV1CEeLc="; # set zeros after modifying channel or date
-        };
-
-        rustChannel = mozilla.rustChannelOf chanspec;
-        rust = rustChannel.rust.override {
+        # Use the latest stable Rust
+        rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+          extensions = [ "rust-src" "rust-analyzer" ];
           targets = [ "wasm32-unknown-unknown" ];
-          extensions = [ ];
         };
-        rust-src = rustChannel.rust-src;
 
-        naersk-lib = naersk.lib."${system}".override {
-          cargo = rust;
-          rustc = rust;
+        naersk-lib = naersk.lib.${system}.override {
+          cargo = rustToolchain;
+          rustc = rustToolchain;
         };
 
         nativeBuildInputs = with pkgs; [
@@ -56,25 +40,29 @@
 
       in
       rec {
-        packages.cstea = naersk-lib.buildPackage {
-          pname = "cstea";
+        packages.rustree = naersk-lib.buildPackage {
+          pname = "rustree";
           version = "0.1.0";
           root = gitignoreSource ./.;
           inherit nativeBuildInputs buildInputs;
         };
-        defaultPackage = packages.cstea;
-        apps.cstea = utils.lib.mkApp {
-          drv = packages.cstea;
+
+        defaultPackage = packages.rustree;
+
+        apps.rustree = flake-utils.lib.mkApp {
+          drv = packages.rustree;
         };
+
         apps.check = {
           type = "app";
           program = "${pkgs.cargo-watch}/bin/cargo-watch";
         };
-        defaultApp = apps.cstea;
+
+        defaultApp = apps.rustree;
+
         devShell = pkgs.mkShell {
-          nativeBuildInputs = nativeBuildInputs ++ [
-            rust
-            rust-src
+          buildInputs = buildInputs ++ [
+            rustToolchain
             pkgs.rust-analyzer
             pkgs.rustfmt
             pkgs.cargo
@@ -86,10 +74,12 @@
             pkgs.nodePackages.npm
             pkgs.nodejs
           ];
-          inherit buildInputs;
-          RUST_SRC_PATH = "${rust-src}/lib/rustlib/src/rust/library";
+
+          inherit nativeBuildInputs;
+          
+          RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           RUST_LOG = "info";
-          RUST_BACKTRACE = 1;
+          RUST_BACKTRACE = "1";
         };
       });
 }

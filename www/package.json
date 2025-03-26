@@ -1,43 +1,25 @@
 {
-  "name": "cstea",
-  "version": "0.1.0",
-  "description": "explore rust csts",
-  "main": "index.js",
-  "bin": {
-    "create-wasm-app": ".bin/create-wasm-app.js"
-  },
-  "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rustwasm/create-wasm-app.git"
-  },
-  "keywords": [
-    "webassembly",
-    "wasm",
-    "rust",
-    "webpack"
-  ],
-  "author": "Ashley Williams <ashley666ashley@gmail.com>",
-  "license": "(MIT OR Apache-2.0)",
-  "bugs": {
-    "url": "https://github.com/rustwasm/create-wasm-app/issues"
-  },
-  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
-  "dependencies": {
-    "@codemirror/basic-setup": "^0.18.2",
-    "@codemirror/lang-rust": "^0.18.0",
-    "@codemirror/theme-one-dark": "^0.18.1",
-    "cstea": "file:../pkg"
-  },
-  "devDependencies": {
-    "copy-webpack-plugin": "^5.0.0",
-    "hello-wasm-pack": "^0.1.0",
-    "raw-loader": "^4.0.2",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.1.0",
-    "webpack-dev-server": "^3.1.5"
-  }
+	"name": "rustree",
+	"version": "0.1.0",
+	"description": "Explore Rust syntax trees",
+	"author": "Akshay <nerdy@peppe.rs>",
+	"main": "index.js",
+	"scripts": {
+		"build": "webpack --config webpack.config.js",
+		"start": "webpack-dev-server"
+	},
+	"dependencies": {
+		"@codemirror/lang-rust": "^6.0.1",
+		"@codemirror/theme-one-dark": "^6.1.2",
+		"codemirror": "^6.0.1",
+		"rustree": "link:../pkg"
+	},
+	"devDependencies": {
+		"copy-webpack-plugin": "^12.0.2",
+		"hello-wasm-pack": "^0.1.0",
+		"raw-loader": "^4.0.2",
+		"webpack": "^5.97.1",
+		"webpack-cli": "^6.0.1",
+		"webpack-dev-server": "^5.2.0"
+	}
 }
