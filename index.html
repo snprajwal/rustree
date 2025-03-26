@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Rustree</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<style>
+  html,
+  body {
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 14px;
+  }
+
+  .grid-container {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .syntax-node {
+    padding-left: 5px;
+    margin-left: 20px;
+    background-color: #2c313a;
+  }
+
+  .syntax-node:hover {
+    background-color: #545c6933;
+  }
+
+  .syntax-err {
+    color: #e06c75;
+  }
+
+  .header {
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  #cst,
+  #source-code,
+  .header,
+  a,
+  a:hover,
+  a:visited {
+    background-color: #282c34;
+    color: #a3aab6;
+  }
+
+  #cst,
+  #source-code {
+    height: calc(100vh - 44px);
+    overflow: scroll;
+  }
+
+  .cm-editor * {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  pre {
+    padding: 0px;
+    margin: 0px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  span.kind {
+    color: #a3aab6;
+  }
+
+  span.range {
+    font-size: 12px;
+    color: #a3aab688;
+  }
+
+  span.token-text {
+    color: #98c379;
+  }
+
+</style>
+
+<body>
+  <noscript>This page contains WebAssembly and JavaScript content, please enable JavaScript in your browser.</noscript>
+  <script src="./bootstrap.js"></script>
+  <div class="header">
+    Explore Rust syntax trees
+    · <a href="https://github.com/snprajwal/rustree">Source</a>
+    · <a href="https://github.com/snprajwal/rustree/tree/main/LICENSE">License</a>
+  </div>
+  <div class="grid-container">
+    <div id="source-code"></div>
+    <div id="cst">
+    </div>
+  </div>
+</body>
+
+</html>
