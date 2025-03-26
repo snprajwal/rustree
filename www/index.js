@@ -3,13 +3,56 @@ import {EditorView, basicSetup} from "codemirror"
 import {Decoration} from "@codemirror/view"
 import {EditorState, StateField, StateEffect} from "@codemirror/state"
 import {rust} from "@codemirror/lang-rust"
-import {oneDark} from "@codemirror/theme-one-dark"
-import file from '!raw-loader!../src/lib.rs'
+import {gruvboxDark} from "@uiw/codemirror-theme-gruvbox-dark";
+
+let defaultText = `use std::collections::HashMap;
+use std::fs::File;
+use std::io::{self, Read, Write};
+
+#[derive(Debug)]
+struct Person {
+    name: String,
+    age: u32,
+}
+
+impl Person {
+    fn new(name: String, age: u32) -> Self {
+        Person { name, age }
+    }
+
+    fn introduce(&self) -> String {
+        format!("Hi, I'm {} and I'm {} years old", self.name, self.age)
+    }
+}
+
+fn process_people(people: &mut HashMap<String, Person>) -> io::Result<()> {
+    let mut file = File::create("people.txt")?;
+
+    for (_, person) in people.iter_mut() {
+        if person.age < 30 {
+            person.age += 1;
+        }
+        writeln!(file, "{}", person.introduce())?;
+    }
+
+    Ok(())
+}
+
+fn main() -> io::Result<()> {
+    let mut people = HashMap::new();
+    people.insert("alice".to_string(), Person::new("Alice".to_string(), 28));
+    people.insert("bob".to_string(), Person::new("Bob".to_string(), 35));
+
+    process_people(&mut people)?;
+    println!("Processed everyone!");
+
+    Ok(())
+}`;
 
 let cst = document.getElementById('cst');
 let view = new EditorView({
   state: EditorState.create({
-    doc: file,
+    doc: defaultText,
     extensions: [
       basicSetup,
       rust(),
@@ -18,7 +61,7 @@ let view = new EditorView({
           render()
         }
       }),
-      oneDark,
+      gruvboxDark,
     ]
   }),
   parent: document.getElementById('source-code'),
@@ -90,6 +133,7 @@ function synTextHtml(node) {
   range.className = "range";
 
   let d = document.createElement("div");
+  d.className = "syntax-props";
   d.appendChild(kind);
   d.appendChild(text);
   d.appendChild(range);
@@ -110,7 +154,7 @@ function renderErr(errorList) {
     let sourceFile = view.state.doc.toString();
     let line = err.range().line(sourceFile);
     let col = err.range().col(sourceFile);
-    errDiv.appendChild(wrap(`line ${line}, col ${col}: ` + err.to_string(), "pre"));
+    errDiv.appendChild(wrap(`${line}:${col}: ` + err.to_string(), "pre"));
   });
   return errDiv;
 }
@@ -120,7 +164,9 @@ function render() {
   cst.innerHTML = "";
   try {
     let synRoot = SynNode.from_str(sourceFile);
-    cst.appendChild(renderCst(synRoot));
+    let root = renderCst(synRoot);
+    root.className = "root-syntax-node";
+    cst.appendChild(root);
   } catch (synError) {
     cst.appendChild(renderErr(synError));
   }
