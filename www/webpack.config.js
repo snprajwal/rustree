@@ -5,24 +5,15 @@ module.exports = {
   entry: "./bootstrap.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bootstrap.js",
+    filename: "bootstrap.js"
   },
-  // Set this to "development" to see nicer error messages in the console
   mode: "production",
   plugins: [
-    new CopyWebpackPlugin({'patterns': ['index.html']})
+    new CopyWebpackPlugin({'patterns': ['index.html', 'favicon.png']})
   ],
   experiments: {
     asyncWebAssembly: true,
-    syncWebAssembly: true,
-  },
-  module: {
-    rules: [
-      {
-        test: /\.txt$/i,
-        use: 'raw-loader',
-      },
-    ],
+    syncWebAssembly: true
   },
   performance: {
     hints: false,

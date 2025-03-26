@@ -59,8 +59,8 @@ impl SynNode {
     }
 
     pub fn from_str(s: &str) -> Result<JsValue, JsValue> {
-        FromStr::from_str(s)
-            .map(|p: SynNode| JsValue::from(p))
+        s.parse::<SynNode>()
+            .map(JsValue::from)
             .map_err(JsValue::from)
     }
 }

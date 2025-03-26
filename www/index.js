@@ -1,11 +1,14 @@
 import {SynNode} from "rustree";
-import {EditorView, basicSetup} from "codemirror"
-import {Decoration} from "@codemirror/view"
-import {EditorState, StateField, StateEffect} from "@codemirror/state"
+import {EditorView, minimalSetup} from "codemirror"
+import {EditorState, StateEffect, StateField} from "@codemirror/state"
 import {rust} from "@codemirror/lang-rust"
 import {gruvboxDark} from "@uiw/codemirror-theme-gruvbox-dark";
+import {lineNumbers, highlightActiveLineGutter, highlightActiveLine, keymap, Decoration} from '@codemirror/view';
+import {indentOnInput, bracketMatching} from '@codemirror/language';
+import {historyKeymap} from '@codemirror/commands';
+import {closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete';
 
-let defaultText = `use std::collections::HashMap;
+const defaultText = `use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, Read, Write};
 
@@ -49,16 +52,25 @@ fn main() -> io::Result<()> {
     Ok(())
 }`;
 
-let cst = document.getElementById('cst');
-let view = new EditorView({
+const view = new EditorView({
   state: EditorState.create({
     doc: defaultText,
     extensions: [
-      basicSetup,
+      minimalSetup,
+      lineNumbers(),
+      indentOnInput(),
+      bracketMatching(),
+      closeBrackets(),
+      highlightActiveLine(),
+      highlightActiveLineGutter(),
+      keymap.of([
+        ...closeBracketsKeymap,
+        ...historyKeymap,
+      ]),
       rust(),
-      EditorView.updateListener.of((v) => {
-        if (v.docChanged) {
-          render()
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          render();
         }
       }),
       gruvboxDark,
@@ -67,108 +79,122 @@ let view = new EditorView({
   parent: document.getElementById('source-code'),
 })
 
-const doHighlight = StateEffect.define()
 
+const hlMark = Decoration.mark({class: "cm-highlight"})
+const hlTheme = EditorView.baseTheme({
+  ".cm-highlight": {
+    // Use the gruvbox yellow with 30% opacity
+    backgroundColor: "#fabd2f4d"
+  }
+})
+
+const doHighlight = StateEffect.define();
+const clearHighlight = StateEffect.define();
 const highlightField = StateField.define({
   create() {
     return Decoration.none;
   },
-  update(_, tr) {
-    for (let e of tr.effects) if (e.is(doHighlight)) {
-      return (Decoration.none).update({
-        add: [hlMark.range(e.value.from, e.value.to)]
-      });
+  update(deco, tr) {
+    for (let e of tr.effects) {
+      if (e.is(doHighlight)) {
+        return Decoration.set([hlMark.range(e.value.from, e.value.to)]);
+      }
+      if (e.is(clearHighlight)) {
+        return Decoration.none;
+      }
     }
-    return Decoration.none;
+    return deco.map(tr.changes);
   },
   provide: f => EditorView.decorations.from(f)
 })
 
-const hlMark = Decoration.mark({class: "cm-highlight"})
-
-const hlTheme = EditorView.baseTheme({
-  ".cm-highlight": {
-    backgroundColor: "#ff3299aa"
-  }
-})
-
-function highlightArea(view, textRange) {
-  let effects = [doHighlight.of({from: textRange.start(), to: textRange.end()})];
+function highlight(view, range) {
+  let effects = [doHighlight.of({from: range.start(), to: range.end()})];
   if (!view.state.field(highlightField, false)) {
     effects.push(StateEffect.appendConfig.of([highlightField, hlTheme]));
   }
-  view.dispatch({effects});
+  view.dispatch({effects, scrollIntoView: true});
 }
 
-function renderCst(synRoot) {
-  let nodeDiv = document.createElement("div");
+function renderCst(node) {
+  const nodeDiv = document.createElement("div");
   nodeDiv.className = "syntax-node";
-  let synText = synTextHtml(synRoot);
-  // FIXME: support highlight on hover
-  // let r = synRoot.range();
-  // synText.onmouseover = () => {
-  //   highlightArea(view, r);
-  //   view.scrollIntoView(r.start());
-  // }
-  nodeDiv.appendChild(synText);
-  if (!synRoot.is_token()) {
-    synRoot.children().forEach(node => {
+  const text = nodeText(node);
+  const range = node.range();
+  // Highlight the source snippet when hovering over a syntax node
+  text.addEventListener("mouseover", () => {
+    highlight(view, node.range());
+  });
+  // Select the source snippet if clicked
+  text.addEventListener("click", () => {
+    view.dispatch({
+      selection: {anchor: range.start(), head: range.end()},
+      scrollIntoView: true
+    });
+  });
+  nodeDiv.appendChild(text);
+  if (!node.is_token()) {
+    node.children().forEach(node => {
       nodeDiv.appendChild(renderCst(node));
     });
   }
   return nodeDiv;
 }
 
-function synTextHtml(node) {
-  let kind = document.createElement("span");
+function nodeText(node) {
+  const kind = document.createElement("span");
   kind.innerText = ` ${node.kind()} `
   kind.className = "kind";
 
-  let text = document.createElement("span");
+  const text = document.createElement("span");
   text.innerText = ` ${node.text()} `
   text.className = "token-text";
 
-  let range = document.createElement("span");
+  const range = document.createElement("span");
   range.innerText = ` ${node.range().to_string()} `
   range.className = "range";
 
-  let d = document.createElement("div");
-  d.className = "syntax-props";
-  d.appendChild(kind);
-  d.appendChild(text);
-  d.appendChild(range);
+  const div = document.createElement("div");
+  div.className = "syntax-content";
+  div.appendChild(kind);
+  div.appendChild(text);
+  div.appendChild(range);
 
-  return d;
+  return div;
 }
 
 function wrap(s, tag) {
-  let t = document.createElement(tag);
+  const t = document.createElement(tag);
   t.innerText = s;
   return t;
 }
 
-function renderErr(errorList) {
-  let errDiv = document.createElement("div");
+function renderErrors(errorList) {
+  const errDiv = document.createElement("div");
   errDiv.className = "syntax-err";
+  const sourceFile = view.state.doc.toString();
   errorList.forEach(err => {
-    let sourceFile = view.state.doc.toString();
-    let line = err.range().line(sourceFile);
-    let col = err.range().col(sourceFile);
+    const line = err.range().line(sourceFile);
+    const col = err.range().col(sourceFile);
     errDiv.appendChild(wrap(`${line}:${col}: ` + err.to_string(), "pre"));
   });
   return errDiv;
 }
 
 function render() {
-  let sourceFile = view.state.doc.toString();
+  const sourceFile = view.state.doc.toString();
+  const cst = document.getElementById('cst');
+  // Clear highlighting when the mouse leaves the CST frame
+  cst.addEventListener("mouseout", () => {
+    view.dispatch({effects: [clearHighlight.of(null)]});
+  });
   cst.innerHTML = "";
   try {
-    let synRoot = SynNode.from_str(sourceFile);
-    let root = renderCst(synRoot);
-    root.className = "root-syntax-node";
+    const root = renderCst(SynNode.from_str(sourceFile));
+    root.id = "root-syntax-node";
     cst.appendChild(root);
-  } catch (synError) {
-    cst.appendChild(renderErr(synError));
+  } catch (errors) {
+    cst.appendChild(renderErrors(errors));
   }
 }
 

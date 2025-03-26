@@ -6,9 +6,11 @@
   <meta name="description" content="Explore Rust syntax trees in your browser!">
   <meta name="author" content="Prajwal S N">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rustree</title>
+  <meta name="darkreader-lock">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <title>Rustree</title>
 </head>
 <style>
   html,
@@ -24,22 +26,21 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .syntax-node {
-    margin-left: 20px;
+  #root-syntax-node {
+    margin-left: 0px;
   }
 
-  .root-syntax-node,
   .syntax-node {
+    margin-left: 20px;
     padding-left: 4px;
     background-color: #3c3836;
   }
 
-  .root-syntax-node:hover,
   .syntax-node:hover {
-    background-color: #504945;
+    background-color: #5d5338;
   }
 
-  .syntax-props {
+  .syntax-content {
     padding-top: 2px;
     padding-bottom: 2px;
   }
@@ -86,6 +87,10 @@
     padding-top: 0px !important;
   }
 
+  ::selection {
+    background-color: #fabd2f4d;
+  }
+
   pre {
     padding: 0px;
     margin: 0px;
@@ -109,7 +114,7 @@
 
 <body>
   <noscript>This page contains WebAssembly and JavaScript content, please enable JavaScript in your browser.</noscript>
-  <script src="./bootstrap.js"></script>
+  <script src="bootstrap.js"></script>
   <div class="header">
     Explore Rust syntax trees
     · <a href="https://github.com/snprajwal/rustree">Source</a>
